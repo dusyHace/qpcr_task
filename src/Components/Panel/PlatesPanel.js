@@ -7,7 +7,7 @@ import { GridList } from '@material-ui/core'
 const styles = {
     border:1,
     borderColor:"black",
-    fontSize: '10px', 
+    fontSize: '9px', 
     wordwrap:'true', 
     textAlign:'center',
     style:{
@@ -29,13 +29,14 @@ export default class extends Component {
 
     getExColor(experiment) {
         // empty wells are lightgray
-        if (typeof experiment === 'undefined') return 'lightgray'
-        // change luminosity for each repeat
+        if (experiment === null) return 'lightgray'
+
+        // change luminosity for each replicant
         let color = "#", c, i;
         let hexArray= ['0a2b7d','9c150b','08803a','b34607', '990825', '5fa108','69088a'] 
-        let hex = hexArray[(experiment[0]) % (hexArray.length)]
+        let hex = hexArray[(experiment[1][0]) % (hexArray.length)]
     
-        let lum= 0.2*(experiment[1]+1)
+        let lum= 0.2*(experiment[1][1]+1)
     
         for (i = 0; i < 3; i++) {
             c = parseInt(hex.substr(i*2,2), 16);
@@ -48,6 +49,7 @@ export default class extends Component {
 
     render() {
         const {result, value} = this.props
+        // console.log(result) // array of plates 
         let columns = value === 96 ? 12 : 24
         // top row on plate
         let arr = Array(columns).fill(0).map((e,i)=>i+1)
@@ -71,9 +73,9 @@ export default class extends Component {
                         {v.map((v1, col2)=> 
                             <Box component="div" {...styles} 
                                 key = {col2} 
-                                style={{...styles.style, ...{backgroundColor:  this.getExColor(v1[1])}}}
+                                style={{...styles.style, ...{backgroundColor:  this.getExColor(v1)}}}
                             >
-                                {v1 !== 0 ? v1[0][0] + ' ' + v1[0][1] : ''} 
+                                {!!v1 ? v1[0][0] + ' ' + v1[0][1] : ''} 
                             </Box>
                         )}
                         <Box component="div" {...styles} key = {col1+1} style={{...styles.style, ...{border: 0, fontSize: '14px'}}}>

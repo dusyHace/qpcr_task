@@ -6,7 +6,6 @@ import RadioGroup from '@material-ui/core/RadioGroup'
 import FormControlLabel from '@material-ui/core/FormControlLabel'
 import FormControl from '@material-ui/core/FormControl'
 
-
 const useStyles = makeStyles(theme => ({
   root: {
     display: 'flex',
@@ -21,21 +20,12 @@ const useStyles = makeStyles(theme => ({
 
 export default ({styles, onClick}) => {
     const onButtonClickSelect = (e, index) => onClick(value)
-    
     const classes = useStyles();
-   
     const [value, setValue] = React.useState('96');
 
     function handleChange(event) {
-           console.log(event.target.value)
-         setValue(event.target.value)
-      
+        setValue(event.target.value)
     }
-
-    function handleSubmit () {
-        console.log(value)
-        setValue(value)
-   }
   
   return ( 
      <Paper style={styles.Paper}>
@@ -75,8 +65,7 @@ export default ({styles, onClick}) => {
             variant='contained'
             onClick={onButtonClickSelect}
             >Load</Button>
-        </Fragment>
-        
+        </Fragment> 
     </Paper>
   )
 }

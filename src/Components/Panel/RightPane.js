@@ -8,9 +8,9 @@ export default ({
     replicates
 }) =>
     <Paper style={styles.Paper}>
-       <pre>{JSON.stringify(samples, null, 2)}</pre>
+       <pre>SAMPLES: <br/>{JSON.stringify(samples, null, 2)}</pre>
        <br/>
-       <pre>{JSON.stringify(reagents, null, 2)}</pre>
+       <pre>REAGENTS: <br/>{JSON.stringify(reagents, null, 2)}</pre>
        <br/>
-       <pre>{JSON.stringify(replicates, null, 2)}</pre>
-    </Paper>    
+       <pre>NUMBER OF REPLICATES: <br/>{JSON.stringify(replicates, null, 2)}</pre>
+    </Paper>

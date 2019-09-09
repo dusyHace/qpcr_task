@@ -16,49 +16,53 @@ export default class extends Component {
       rows = 16
       cols = 24
     }
-    return Array(rows).fill(0).map(()=>Array(cols).fill(0))
+    return Array(rows).fill(0).map(()=>Array(cols).fill(null))
   }
 
-  findPositionInUsedPlate(well96, exp, repp) {
+  findPositionInUsedPlate(plate, exp, first_repl, replicants, positionLast) {
     // optimze for 1 plate
-    // repp = 0 new experiment starts
+    let exRows = exp.length
+    let exClm  = exp[0].length
+    let x1 = positionLast[0] === -1 ? 0 : positionLast[0] 
 
-    let expl  = exp.length
-    let expyl = exp[0].length
-    let firstPositeion = repp ? 1 : well96[0].length
+    for (let x = x1; x < plate.length; x++) {
+      for (let y = 0; y < plate[0].length; y++) {
+       if(!plate[x][y]) {
+        let xemptyspaces = plate.length - x;
+        let yemptyspaces = plate[x].length - y;
+ 
+        if (first_repl && (exClm * replicants) > yemptyspaces && y!== 0) {
+          // first replicant start new line
+          continue
+        }
 
-    for (let x = 0; x < well96.length; x++) {
-      for (let y = 0; y < firstPositeion; y++) {
-       if(!well96[x][y]) {
-     
-        let xemptyspaces=well96.length-x;
-        let yemptylspaces=well96[x].length-y;
-  
-        let enoughspace=xemptyspaces-expl >= 0 && yemptylspaces-expyl>=0;
+        let enoughSpace = xemptyspaces - exRows >= 0 && yemptyspaces - exClm >= 0;
 
-        //check inner space
-        if (enoughspace) {
-          for(let x1 = x; x1 < x+expl; x1++) {
-            for(let y1 = y; y1 < y+expyl; y1++) {
-              if(well96[x1][y1]) {
-                enoughspace = false
+        // check inner space
+        if (enoughSpace) {
+          for(let x1 = x; x1 < x + exRows; x1++) {
+            for(let y1 = y; y1 < y + exClm; y1++) {
+              if(plate[x1][y1]) {
+                enoughSpace = false
                 break
               }
             }
           }
         }
-        if (enoughspace) {
+
+        if (enoughSpace) {
            return [x, y]
         }
+
        } 
-       
       }
     }
+
     return [-1, -1]
   }
 
   getCombinations() {
-    let results=[]
+    let results = []
     
     for (let i = 0; i < samples_array.length; i++) {
       let res = []
@@ -67,12 +71,11 @@ export default class extends Component {
       }          
       results = [...results , res]
     }
- 
    
     return  results
   }
 
-  addExpToPlare(plate, startPos, exp, color){
+  addExpToPlate(plate, startPos, exp, color) {
     for(let x = 0; x < exp.length; x++) {
       for(let y = 0; y < exp[0].length; y++) {
 
@@ -83,10 +86,10 @@ export default class extends Component {
     return plate;
   }
 
-  splitExperiment(splitRows, spitClm, experiment) {   
+  splitExperiment(splitRows, spitClm, experiment, plateSize) {   
     
-    let plRows = 8
-    let plClm = 12 
+    let plRows = plateSize === 96 ? 8 : 16
+    let plClm  = plateSize === 96 ? 12 : 24 
   
     let arrExperminetSplit = []
     if (!splitRows &&  !spitClm) 
@@ -114,7 +117,7 @@ export default class extends Component {
           while(inNewExp < exC) {
               let singleExperminetSplit = []
               for (let j = 0; j < slice.length; j++) {    
-                  singleExperminetSplit[j] = slice[j].slice(startPC, startPC+plClm)             
+                  singleExperminetSplit[j] = slice[j].slice(startPC, startPC+plClm)
               } 
           
               arrExperminetSplit = [...arrExperminetSplit, singleExperminetSplit]
@@ -132,61 +135,79 @@ export default class extends Component {
   }
 
   getResult(value) {
-    console.log(value)
     let plRows = value === 96 ? 8 : 16
     let plClm = value === 96 ? 12 : 24
 
-    this.plateSize = value
+    let plateSize = value
     let result = this.getCombinations()
-    let arrPlates = [this.newPlate(this.plateSize)]
-    let positionFree=[-1, -1]
+    let arrPlates = [this.newPlate(plateSize)]
+    let positionFree = [0, 0]
 
     result.map((experiment, index) => {
       for(let repp = 0; repp < replicates[index]; repp++) {
-
-       positionFree= this.findPositionInUsedPlate(arrPlates[arrPlates.length-1], experiment, false)//, replicates[col1])
-     
-      if (positionFree[0] !== -1 && positionFree[0] !== -1
-        && experiment[0].length < plClm && experiment.length < plRows) {  
-        
-        // experminet fits ok in used plate
-        arrPlates[arrPlates.length-1] = this.addExpToPlare(arrPlates[arrPlates.length-1],positionFree,experiment, [index, repp])
-
-        } else {
-        
-              // check if it fits [x, y] else split y
-              
-             
+        // find first position in plate for experiment
+        positionFree = this.findPositionInUsedPlate(
+                            arrPlates[arrPlates.length-1], 
+                            experiment, 
+                            !repp,
+                            replicates[index],
+                            positionFree
+                      )
+        // experminet fits in used plate
+        if (positionFree[0] !== -1 && positionFree[0] !== -1
+          && experiment[0].length < plClm && experiment.length < plRows) {
           
-              let splitExperminet = this.splitExperiment(experiment.length > plRows, experiment[0].length > plClm,  experiment)
-           
+          arrPlates[arrPlates.length-1] = this.addExpToPlate(
+                                                arrPlates[arrPlates.length-1],
+                                                positionFree,
+                                                experiment, 
+                                                [index, repp]
+                                          )
+        } else {
+          let splitExperminet = this.splitExperiment(
+                                      experiment.length > plRows, 
+                                      experiment[0].length > plClm, 
+                                      experiment,
+                                      plateSize
+                                )
 
-              for (let expindex = 0; expindex < splitExperminet.length; expindex++) {
-              let exp = splitExperminet[expindex]
-       
-                // splite experminet
-                positionFree = this.findPositionInUsedPlate(arrPlates[arrPlates.length-1], exp, false)
+          for (let expindex = 0; expindex < splitExperminet.length; expindex++) {
+            let exp = splitExperminet[expindex]
+  
+            // splite experminet
+            positionFree = this.findPositionInUsedPlate(
+                                  arrPlates[arrPlates.length-1], 
+                                  exp, 
+                                  !repp,
+                                  replicates[index],
+                                  positionFree
+                            )
 
-                if (positionFree[0] === -1 || positionFree[0] === -1) {
-                  arrPlates = [...arrPlates, this.newPlate(this.plateSize)]
-                  positionFree=[0, 0] 
-                }
-                
-                arrPlates[arrPlates.length-1] = this.addExpToPlare(arrPlates[arrPlates.length-1],positionFree,exp, [index, repp])
-              }
-
+            if (positionFree[0] === -1 || positionFree[0] === -1) {
+              arrPlates = [...arrPlates, this.newPlate(plateSize)]
+              positionFree = [0, 0] 
+            }
+            
+            arrPlates[arrPlates.length-1] = this.addExpToPlate(
+                                                  arrPlates[arrPlates.length-1],
+                                                  positionFree,
+                                                  exp, 
+                                                  [index, repp]
+                                            )
+          }
         }
-    }
-    return arrPlates
-  })
-
+      }
+      return arrPlates
+    })
 
     return arrPlates
   }
 
   handlePlateChanged = value => {
-      this.setState({value: parseInt(value)})
-      this.setState({result:this.getResult(parseInt(value))})
+      this.setState({
+        value: parseInt(value),
+        result:this.getResult(parseInt(value))
+      })
     }
 
   render () {

@@ -2,7 +2,7 @@ import React from 'react'
 import {Grid} from '@material-ui/core'
 import LeftPane from './LeftPane'
 import RightPane from './RightPane'
-import Well from './Well'
+import PlatesPanel from './PlatesPanel'
 
 const styles = {
     Paper: {
@@ -22,7 +22,6 @@ export default ({
     value,
     onClick
 }) =>
-
     <Grid container> 
         <Grid item xs={2}>
             <LeftPane 
@@ -42,7 +41,7 @@ export default ({
             />
         </Grid>
         <Grid item xs={9}>
-            <Well 
+            <PlatesPanel 
               styles={styles}
               result={result}
               value={value}
