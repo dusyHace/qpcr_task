@@ -1,11 +1,11 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 ### How to Test
-##Visual presentation for generating plates.
+## Visual presentation for generating plates
 
-Each experiment is presented with different color and each repeat within experiment with different shade for better visual presentation.
-Ypu can switch between different plate sizes with the same data.
+Each experiment is presented with different color and each repeat within experiment with different shade for better visual presentation. <br>
+You can switch between different plate sizes with the same data [96, 384].
 
-For better testing I used random generated arrays of samples and reagents:
+For better testing I used random generated arrays of unique samples and reagents:
 In src/store.js you can adjust parameters with generating random number
 - maximum nuber of experiments MAX_NR_TEST
 - maximum length of samples in each experiment MAX_LENGTH_SAMPLES
