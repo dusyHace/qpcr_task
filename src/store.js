@@ -23,25 +23,23 @@ function shuffle (array)  {
 }
 
 for (let i = 0; i < nr_test; i++) {   
-    let arr = Array(100).fill(0).map((e,i)=>i+1)
-
     // set max length of samples using random fn
     let length_exp = Math.floor(Math.random()*MAX_LENGTH_SAMPLES) + 1
 
-    shuffle(arr)
+    shuffle(samples)
     let sampleArray = []
     for (let i = 0; i < length_exp; i++) {
-        sampleArray=[...sampleArray, samples[arr[i]-1]]
+        sampleArray=[...sampleArray, samples[i]]
     }
     samples_array=[...samples_array, sampleArray]
 
     // set max length of reagents using random fn
     length_exp = Math.floor(Math.random()*MAX_LENGTH_REAGENTS) + 1
 
-    shuffle(arr)
+    shuffle(reagents)
     let reagArray = []
     for (let i = 0; i < length_exp; i++) {
-        reagArray=[...reagArray, reagents[arr[i]-1]]
+        reagArray=[...reagArray, reagents[i]]
     }
     reagents_array=[...reagents_array, reagArray]
 
