@@ -12,6 +12,8 @@ In src/store.js you can adjust parameters with generating random number
 - maximum length of reagents in each experiment MAX_LENGTH_REAGENTS
 - maximum number repeats for each experiment MAX_NR_REPLICANTS
 
+![Nodes example](https://github.com/dusyHace/qpcr_task/blob/master/plate96.png)
+
 ## Available Scripts
 
 In the project directory, you can run:
