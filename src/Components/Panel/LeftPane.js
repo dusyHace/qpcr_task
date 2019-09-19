@@ -1,5 +1,5 @@
 import React, {Fragment} from 'react'
-import {Paper, Button} from '@material-ui/core'
+import {Paper, Button, TextField} from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import Radio from '@material-ui/core/Radio'
 import RadioGroup from '@material-ui/core/RadioGroup'
@@ -18,15 +18,22 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-export default ({styles, onClick}) => {
-    const onButtonClickSelect = (e, index) => onClick(value)
+export default ({styles, onClick, minPlates}) => {
+    const onButtonClickSelect = (e, index) => onClick(value, values)
     const classes = useStyles();
     const [value, setValue] = React.useState('96');
+    const [values, setValues] = React.useState({
+      maxPlates: 0
+    });
+
+    const handleChangeName = maxPlates => event => {
+      setValues({[maxPlates]: event.target.value});
+    }
 
     function handleChange(event) {
         setValue(event.target.value)
     }
-  
+   
   return ( 
      <Paper style={styles.Paper}>
          <Fragment>
@@ -59,6 +66,23 @@ export default ({styles, onClick}) => {
             </RadioGroup>
         </FormControl>    
         </Fragment> 
+        <br/>
+        <TextField 
+            multiline
+            error
+            rowsMax="2"
+            value={minPlates}
+            InputProps={{
+              readOnly: true,
+            }}
+          />
+        <br/>
+       <TextField
+        id="maxplates"
+        label="Select max plates" 
+        onChange={handleChangeName("maxPlates")}
+        margin="normal"
+      />
         <br/>
         <Fragment>
             <Button 

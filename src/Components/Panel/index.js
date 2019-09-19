@@ -20,7 +20,8 @@ export default ({
     replicates,
     result,
     value,
-    onClick
+    onClick,
+    minPlates
 }) =>
     <Grid container> 
         <Grid item xs={2}>
@@ -30,6 +31,7 @@ export default ({
                 reagents={reagents}
                 replicates={replicates}
                 onClick={onClick}
+                minPlates={minPlates}
             />
         </Grid>
         <Grid item xs={1}>

@@ -2,10 +2,10 @@ export let samples_array = []
 export let reagents_array = []
 export let replicates = []
 
-const MAX_NR_TEST = 7
-const MAX_LENGTH_SAMPLES = 10
-const MAX_LENGTH_REAGENTS = 20
-const MAX_NR_REPLICANTS = 3
+const MAX_NR_TEST = 5
+const MAX_LENGTH_SAMPLES = 25
+const MAX_LENGTH_REAGENTS = 17
+const MAX_NR_REPLICANTS = 4
 
 let samples = []
 let reagents = []
@@ -45,4 +45,85 @@ for (let i = 0; i < nr_test; i++) {
 
     // set max nr of replicates using random
     replicates.push(Math.floor(Math.random()*MAX_NR_REPLICANTS) + 1)
-}
+}/*
+
+samples_array =
+[
+  [
+    "Sam-44",
+    "Sam-24"
+  ],
+  [
+    "Sam-61",
+    "Sam-29",
+    "Sam-91",
+    "Sam-32",
+    "Sam-2"
+  ],
+  [
+    "Sam-42",
+    "Sam-93"
+  ],
+  [
+    "Sam-40",
+    "Sam-77",
+    "Sam-93",
+    "Sam-67",
+    "Sam-8"
+  ],
+  [
+    "Sam-58",
+    "Sam-42",
+    "Sam-52",
+    "Sam-31",
+    "Sam-41"
+  ]
+]
+  
+reagents_array= 
+[
+  [
+    "Reag-63",
+    "Reag-20",
+    "Reag-92",
+    "Reag-61"
+  ],
+  [
+    "Reag-77",
+    "Reag-6",
+    "Reag-24"
+  ],
+  [
+    "Reag-37",
+    "Reag-74",
+    "Reag-52",
+    "Reag-96",
+    "Reag-30",
+    "Reag-17",
+    "Reag-69"
+  ],
+  [
+    "Reag-68",
+    "Reag-80",
+    "Reag-50",
+    "Reag-71",
+    "Reag-87",
+    "Reag-74",
+    "Reag-49"
+  ],
+  [
+    "Reag-77",
+    "Reag-50",
+    "Reag-80",
+    "Reag-62"
+  ]
+]
+replicates =
+[
+  1,
+  2,
+  5,
+  5,
+  1
+]
+*/
