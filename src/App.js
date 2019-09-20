@@ -55,14 +55,17 @@ export default class extends Component {
     let nodes = []
     for (let i = 0; i < maxPlates; i++) {
       arrPlates = [...arrPlates, this.newPlate(platesize)]
-      nodes.push([this.newNode(0, 0, this.plRows, this.plClm)])
+      nodes.push([
+        [this.newNode(0, 0, this.plRows, this.plClm)],
+        [this.newNode(0, 0, this.plRows, this.plClm)]
+      ])
     }
 
     this.plates = arrPlates
     return nodes
   }
 
-  joinNodes(plateNodes) {
+  joinNodesHorizontal(plateNodes) {
     return plateNodes.reduce((a, b) => {
       let reduced = false
         for (let i = 0; i < a.length; i++) {
@@ -84,6 +87,29 @@ export default class extends Component {
     }, {})
   }
 
+  joinNodesVertical(plateNodes) {
+    return plateNodes.reduce((a, b) => {
+      let reduced = false
+        for (let i = 0; i < a.length; i++) {
+            if (a[i].sr === b.sr 
+                && a[i].sc + a[i].cl === b.sc 
+                && a[i].rl === b.rl) {
+                a[i].cl = a[i].cl + b.cl
+                reduced = true
+            }
+        }
+        
+        if (!Array.isArray(a)) { 
+            a = [b]
+        } else if (!reduced) {
+            a = [...a, b]
+        }
+
+      return a 
+    }, {})
+  }
+
+
   recursionFitRepl(exp, rep, nodes, opt) {
     // 1 best fit by rows and clm (both >= 0)
     // 2 best fit by rows and min clm (row >= 0 and clm min to 0)
@@ -95,14 +121,17 @@ export default class extends Component {
     let bestN = 0
     let indexP = -1
     let innerNode = []
+    let horVer = 0
 
-    nodes.map((node, i) => {
+    nodes.map((nodeHV, i) => {
+      nodeHV.map((node, k) => {
         for (let j = 0; j < node.length; j++) {
           if (opt === 1 && (node[j].rl - expR) >= 0 && (node[j].cl - (expC*rep)) >= 0
               && (node[j].rl - expR) * (node[j].cl - (expC*rep)) < minV) {
                   indexP = i
                   bestN = j
                   innerNode = node[j]
+                  horVer = k
                   minV = (node[j].rl - expR) * (node[j].cl - (expC*rep)) 
           }
           if (opt === 2 && (node[j].rl - expR) >= 0 
@@ -110,6 +139,7 @@ export default class extends Component {
                   indexP = i
                   bestN = j
                   innerNode = node[j]
+                  horVer = k
                   minV = (node[j].rl - expR) * Math.abs((node[j].cl - (expC*rep))) 
           }
           if (opt === 3 && (node[j].cl - (expC*rep)) >= 0
@@ -117,27 +147,31 @@ export default class extends Component {
                   indexP = i
                   bestN = j
                   innerNode = node[j]
+                  horVer = k
                   minV = Math.abs((node[j].rl - expR)) * (node[j].cl - (expC*rep)) 
           }
           if (opt === 4 && Math.abs((node[j].rl - expR)) * Math.abs((node[j].cl - (expC*rep))) < minV) {
                   indexP = i
                   bestN = j
                   innerNode = node[j]
+                  horVer = k
                   minV = Math.abs((node[j].rl - expR)) * Math.abs((node[j].cl - (expC*rep)) )
           }
         }
         return node
       })
+        return nodeHV
+    })
 
     if (indexP === -1 && rep > 1) {
         return this.recursionFitRepl(exp, rep-1, nodes, opt)
     }
 
-    return {'rep':rep, 'indexp':indexP, 'node':innerNode, 'bestN': bestN}
+    return {'rep':rep, 'indexp':indexP, 'node':innerNode, 'bestN': bestN, 'horVer': horVer}
   }
 
-  createTwoNodes(res, expR, expC, nodes) {
-    let vnode = nodes[res.indexp].slice(0)
+  createTwoNodesHorizontal(res, expR, expC, nodes) {
+    let vnode = nodes[res.indexp][res.horVer].slice(0)
     vnode.splice(res.bestN,1)
 
     // create two more nodes horizontaly 
@@ -148,6 +182,24 @@ export default class extends Component {
 
     if (res.node.rl-expR > 0 && res.node.sr+expR <= this.plRows) {
         let nodeDown = this.setNode(res.node.sr+expR, res.node.sc, res.node.rl-expR, res.node.cl)
+        vnode.push(nodeDown)
+    }
+
+    return vnode
+  }
+
+  createTwoNodesVertical(res, expR, expC, nodes) {
+    let vnode = nodes[res.indexp][res.horVer].slice(0)
+    vnode.splice(res.bestN,1)
+
+    // create two more nodes verticaly 
+    if (res.node.cl-(expC*res.rep) > 0 &&  res.node.sc+(expC*res.rep) <= this.plClm) {
+      let nodeRight = this.setNode(res.node.sr, res.node.sc+(expC*res.rep), res.node.rl, res.node.cl-(expC*res.rep))
+      vnode.push(nodeRight)
+    }
+
+    if (res.node.rl-expR > 0 && res.node.sr+expR <= this.plRows) {
+      let nodeDown = this.setNode(res.node.sr+expR, res.node.sc, res.node.rl-expR, (expC*res.rep))
         vnode.push(nodeDown)
     }
 
@@ -201,40 +253,46 @@ export default class extends Component {
 
     if (res.indexp !== -1 && opt === 1) {
         remaining = false
-        nodes[res.indexp] = this.joinNodes(this.createTwoNodes(res, expR, expC, nodes))
+        let nodeHor = this.joinNodesHorizontal(this.createTwoNodesHorizontal(res, expR, expC, nodes))
+        let nodeVert = this.joinNodesVertical(this.createTwoNodesVertical(res, expR, expC, nodes))
+        nodes[res.indexp][0] = nodeHor
+        nodes[res.indexp][1] = nodeVert
         let row = res.node.sr
         let clm = res.node.sc
     
         this.addExperimentToPlate(res.indexp, row, clm, experiment.exp, [index, countRep])
       
     } else if (res.indexp !== -1 && (opt === 2 || opt === 3)) {         
-        nodes[res.indexp] = this.joinNodes(this.createTwoNodes(res, expR, expC, nodes))
-        let row = res.node.sr
-        let clm = res.node.sc
+      let nodeHor = this.joinNodesHorizontal(this.createTwoNodesHorizontal(res, expR, expC, nodes))
+      let nodeVert = this.joinNodesVertical(this.createTwoNodesVertical(res, expR, expC, nodes))
+      nodes[res.indexp][0] = nodeHor
+      nodes[res.indexp][1] = nodeVert
+      let row = res.node.sr
+      let clm = res.node.sc
 
-        twoNewArr = opt === 2 
-            ? this.splitByClms(experiment.exp, res.node.cl) 
-            : this.splitByRows(experiment.exp, res.node.rl)
+      twoNewArr = opt === 2 
+          ? this.splitByClms(experiment.exp, res.node.cl) 
+          : this.splitByRows(experiment.exp, res.node.rl)
 
-        this.addExperimentToPlate(res.indexp, row, clm, twoNewArr.cutExp, [index, countRep])            
+      this.addExperimentToPlate(res.indexp, row, clm, twoNewArr.cutExp, [index, countRep])            
     } else if (opt === 4) { 
-        let splitRows = this.splitByRows(experiment.exp, res.node.rl)
+      let splitRows = this.splitByRows(experiment.exp, res.node.rl)
 
-        let exper1stCut = {
-            'exp': splitRows.cutExp,
-            'rep': experiment.rep
-        }
-        
-        this.cutExperiment(exper1stCut, countRep, nodes, index, 1) 
+      let exper1stCut = {
+          'exp': splitRows.cutExp,
+          'rep': experiment.rep
+      }
+      
+      this.cutExperiment(exper1stCut, countRep, nodes, index, 1) 
 
-        if (splitRows.remainingExp.length) {
-            let exper2ndCut = {
-                'exp': splitRows.remainingExp,
-                'rep': experiment.rep
-            }
+      if (splitRows.remainingExp.length) {
+          let exper2ndCut = {
+              'exp': splitRows.remainingExp,
+              'rep': experiment.rep
+          }
 
-          return this.cutExperiment(exper2ndCut, countRep, nodes, index, 1) 
-        }
+        return this.cutExperiment(exper2ndCut, countRep, nodes, index, 1) 
+      }
     }
       
     if (remaining) {
@@ -259,7 +317,10 @@ export default class extends Component {
 
         if (res && res.indexp !== -1) {
           // start with adding experiments that fit into plate with max replicantes
-          nodes[res.indexp] = this.joinNodes(this.createTwoNodes(res, expR, expC, nodes))
+          let nodeHor = this.joinNodesHorizontal(this.createTwoNodesHorizontal(res, expR, expC, nodes))
+          let nodeVer = this.joinNodesVertical(this.createTwoNodesVertical(res, expR, expC, nodes))
+          nodes[res.indexp][0] = nodeHor
+          nodes[res.indexp][1] = nodeVer
           let row = res.node.sr
           let clm = res.node.sc
 
