@@ -283,7 +283,7 @@ export default class extends Component {
           'rep': experiment.rep
       }
       
-      this.cutExperiment(exper1stCut, countRep, nodes, index, 1) 
+      this.cutExperiment(exper1stCut, countRep, nodes, index, 2) 
 
       if (splitRows.remainingExp.length) {
           let exper2ndCut = {
@@ -291,7 +291,7 @@ export default class extends Component {
               'rep': experiment.rep
           }
 
-        return this.cutExperiment(exper2ndCut, countRep, nodes, index, 1) 
+        return this.cutExperiment(exper2ndCut, countRep, nodes, index, 2) 
       }
     }
       
